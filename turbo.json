@@ -4,11 +4,76 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}",
+        "!**/test/**",
+        "!**/tests/**",
+        "!**/__tests__/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}"
+      ]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}"
+      ],
+      "cache": false
+    },
+    "format": {
+      "inputs": [
+        "src/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "app/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "components/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "lib/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "hooks/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "*.{js,jsx,ts,tsx,json,md}",
+        ".prettierrc",
+        ".prettierrc.json",
+        "prettier.config.*",
+        "!.next/**",
+        "!dist/**",
+        "!build/**",
+        "!node_modules/**"
+      ],
+      "cache": false
+    },
+    "format:check": {
+      "inputs": [
+        "src/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "app/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "components/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "lib/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "hooks/**/*.{js,jsx,ts,tsx,json,css,md}",
+        "*.{js,jsx,ts,tsx,json,md}",
+        ".prettierrc",
+        ".prettierrc.json",
+        "prettier.config.*",
+        "!.next/**",
+        "!dist/**",
+        "!build/**",
+        "!node_modules/**"
+      ]
+    },
+    "type-check": {
+      "dependsOn": ["^type-check"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"]

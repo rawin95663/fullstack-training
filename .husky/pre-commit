@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running format and lint for changed packages..."
+
+# Get list of changed files
+CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ -z "$CHANGED_FILES" ]; then
+  echo "No staged files to check."
+  exit 0
+fi
+
+echo "Changed files:"
+echo "$CHANGED_FILES"
+
+# Run format and lint for affected packages
+echo "🎨 Formatting code..."
+pnpm turbo format --filter="[HEAD]" || exit 1
+
+echo "🔍 Linting code..."
+pnpm turbo lint --filter="[HEAD]" || exit 1
+
+echo "🔍 Type checking..."
+pnpm turbo type-check --filter="[HEAD]" || exit 1
+
+echo "✅ All checks passed!" 

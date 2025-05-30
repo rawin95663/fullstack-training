@@ -1,0 +1,29 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Running build for changed projects..."
+
+# Check if we have any staged changes or we're pushing commits
+LOCAL_CHANGES=$(git diff --name-only --cached)
+UNPUSHED_COMMITS=$(git rev-list @{u}.. 2>/dev/null | wc -l | tr -d ' ')
+
+if [ -z "$LOCAL_CHANGES" ] && [ "$UNPUSHED_COMMITS" = "0" ]; then
+  echo "No changes to build, skipping."
+  exit 0
+fi
+
+echo "📦 Building affected packages using Turbo..."
+
+# Use turbo's affected package detection
+# This will only build packages that have changed files
+pnpm turbo build --filter="...[HEAD~1]"
+
+BUILD_EXIT_CODE=$?
+
+if [ $BUILD_EXIT_CODE -ne 0 ]; then
+  echo "❌ Build failed! Push aborted."
+  echo "Please fix the build errors and try again."
+  exit 1
+fi
+
+echo "✅ Build successful! Ready to push." 
