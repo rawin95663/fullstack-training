@@ -424,7 +424,7 @@ git branch -d hotfix/security-vulnerability
 ### Complete GitFlow Lifecycle
 
 ```mermaid
-gitgraph
+gitGraph
     commit id: "Initial"
     branch develop
     checkout develop
