@@ -34,3 +34,6 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+# Private individual user cursor rules
+.cursor/rules/_*.mdc
