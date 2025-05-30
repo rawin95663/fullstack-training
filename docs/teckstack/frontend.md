@@ -5,6 +5,12 @@
   - [Official Website](https://nextjs.org/)
   - [Documentation](https://nextjs.org/docs)
 
+## Language & Type Safety
+- **TypeScript** - JavaScript with static type definitions
+  - [Official Website](https://www.typescriptlang.org/)
+  - [Documentation](https://www.typescriptlang.org/docs/)
+  - [GitHub Repository](https://github.com/microsoft/TypeScript)
+
 ## UI & Styling
 - **Shadcn/ui** - Re-usable components built with Radix UI and Tailwind CSS
   - [Official Website](https://ui.shadcn.com/)
@@ -41,6 +47,19 @@
   - [GitHub Repository](https://github.com/colinhacks/zod)
   - [Documentation](https://zod.dev/)
 
+## Development Workflow
+- **Husky** - Git hooks made easy
+  - [GitHub Repository](https://github.com/typicode/husky)
+  - [Documentation](https://typicode.github.io/husky/)
+
+- **Lint-staged** - Run linters on git staged files
+  - [GitHub Repository](https://github.com/okonet/lint-staged)
+  - [Documentation](https://github.com/okonet/lint-staged#readme)
+
+- **Commitizen** - Conventional commit messages
+  - [GitHub Repository](https://github.com/commitizen/cz-cli)
+  - [Documentation](http://commitizen.github.io/cz-cli/)
+  
 ## Testing
 - **Vitest** - Unit testing framework
   - [Official Website](https://vitest.dev/)
@@ -80,3 +99,14 @@
 - Hook-based architecture for better code organization and reusability
 - Component-driven development approach
 - TypeScript for type safety and better developer experience
+
+## Code Quality & Formatting
+- **ESLint** - JavaScript and TypeScript linter
+  - [Official Website](https://eslint.org/)
+  - [Documentation](https://eslint.org/docs/latest/)
+  - [GitHub Repository](https://github.com/eslint/eslint)
+
+- **Prettier** - Opinionated code formatter
+  - [Official Website](https://prettier.io/)
+  - [Documentation](https://prettier.io/docs/en/)
+  - [GitHub Repository](https://github.com/prettier/prettier)
