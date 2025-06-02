@@ -1,0 +1,226 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Helper Functions Testing Standards
+
+## Critical Rules
+
+- **Test Co-location**: Every helper function MUST have a corresponding test in the same directory with `.test.ts` suffix
+- **Coverage Requirement**: All helper functions MUST achieve minimum 90% code coverage
+- **Test Completeness**: Tests MUST cover happy path, edge cases, error conditions, and boundary values
+- **Pure Function Testing**: Tests MUST verify function purity (same inputs = same outputs, no side effects)
+- **Type Safety Testing**: Tests MUST verify TypeScript type safety and proper type inference
+- **Performance Testing**: Complex functions MUST include performance benchmarks
+- **Documentation Testing**: All JSDoc examples MUST be tested to ensure accuracy
+- **Regression Prevention**: Tests MUST prevent regression when functions are modified
+- **Test Naming**: Use descriptive test names that explain expected behavior
+- **Test Organization**: Group related tests using `describe` blocks for better organization
+
+## Test Structure Standards
+
+### File Organization
+```
+src/
+├── string/
+│   ├── index.ts          # Function implementations
+│   └── index.test.ts     # Comprehensive tests
+├── number/
+│   ├── index.ts
+│   └── index.test.ts
+└── ...
+```
+
+### Test Template
+```typescript
+import { describe, it, expect } from "vitest";
+import { functionName } from "./index";
+
+describe("functionName", () => {
+  describe("happy path", () => {
+    it("should handle typical use case", () => {
+      expect(functionName(validInput)).toBe(expectedOutput);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle empty input", () => {
+      expect(functionName("")).toBe(expectedEmptyResult);
+    });
+
+    it("should handle null/undefined", () => {
+      expect(functionName(null)).toBe(expectedNullResult);
+      expect(functionName(undefined)).toBe(expectedUndefinedResult);
+    });
+  });
+
+  describe("error conditions", () => {
+    it("should handle invalid input gracefully", () => {
+      expect(functionName(invalidInput)).toBe(expectedErrorResult);
+    });
+  });
+});
+```
+
+## Test Categories
+
+### Input Validation Tests
+- Test with valid inputs
+- Test with invalid inputs (wrong type, format, range)
+- Test with null, undefined, empty values
+- Test with boundary values (min/max)
+
+### Output Verification Tests
+- Verify correct return values
+- Verify return type consistency
+- Verify immutability (inputs not modified)
+- Verify deterministic behavior
+
+### Performance Tests
+- Test execution time for large inputs
+- Test memory usage for data-heavy operations
+- Test scalability with varying input sizes
+
+### Integration Tests
+- Test function interactions within modules
+- Test proper imports/exports
+- Test tree-shaking compatibility
+
+## Test Examples
+
+<example>
+  String function testing with comprehensive coverage:
+  ```typescript
+  import { describe, it, expect } from "vitest";
+  import { slugify } from "./index";
+
+  describe("slugify", () => {
+    describe("happy path", () => {
+      it("should convert text to URL-friendly slug", () => {
+        expect(slugify("Hello World")).toBe("hello-world");
+        expect(slugify("My Blog Post")).toBe("my-blog-post");
+      });
+    });
+
+    describe("special characters", () => {
+      it("should remove special characters", () => {
+        expect(slugify("Hello@#$World!")).toBe("helloworld");
+        expect(slugify("Café & Restaurant")).toBe("cafe-restaurant");
+      });
+    });
+
+    describe("edge cases", () => {
+      it("should handle empty string", () => {
+        expect(slugify("")).toBe("");
+      });
+
+      it("should handle whitespace-only string", () => {
+        expect(slugify("   ")).toBe("");
+      });
+
+      it("should handle null/undefined", () => {
+        expect(slugify(null as any)).toBe("");
+        expect(slugify(undefined as any)).toBe("");
+      });
+    });
+
+    describe("unicode handling", () => {
+      it("should normalize unicode characters", () => {
+        expect(slugify("Café")).toBe("cafe");
+        expect(slugify("naïve")).toBe("naive");
+      });
+    });
+  });
+  ```
+</example>
+
+<example type="invalid">
+  Insufficient testing that doesn't cover edge cases:
+  ```typescript
+  // ❌ WRONG - Only tests happy path
+  describe("formatCurrency", () => {
+    it("works", () => {
+      expect(formatCurrency(100)).toBe("$100.00");
+    });
+  });
+
+  // ❌ WRONG - Doesn't test pure function behavior
+  describe("calculateAge", () => {
+    it("calculates age", () => {
+      // Using new Date() makes test non-deterministic
+      expect(calculateAge(new Date("1990-01-01"))).toBeGreaterThan(30);
+    });
+  });
+
+  // ❌ WRONG - No error handling tests
+  describe("parseJSON", () => {
+    it("parses valid JSON", () => {
+      expect(parseJSON('{"key": "value"}')).toEqual({key: "value"});
+    });
+    // Missing: test for invalid JSON
+  });
+  ```
+</example>
+
+## Coverage Requirements
+
+### Function Coverage
+- All public functions: 100%
+- All branches: 90%+
+- All lines: 90%+
+- All edge cases: 100%
+
+### Test Categories Coverage
+- Happy path: Required
+- Edge cases: Required  
+- Error conditions: Required
+- Boundary values: Required
+- Type safety: Required
+
+## Automated Test Generation
+
+When creating new helper functions, automatically generate:
+
+1. **Basic test structure** with describe blocks
+2. **Happy path tests** for typical usage
+3. **Edge case tests** for empty/null/undefined inputs
+4. **Type validation tests** for TypeScript safety
+5. **Performance tests** for complex operations
+6. **Documentation tests** for JSDoc examples
+
+## Test Execution Standards
+
+### Local Development
+```bash
+pnpm run test          # Run all tests
+pnpm run test:watch    # Watch mode during development
+pnpm run test:coverage # Generate coverage report
+```
+
+### CI/CD Requirements
+- All tests must pass before merge
+- Coverage threshold: 90% minimum
+- Performance regression checks
+- Type checking validation
+
+## Test Maintenance
+
+### When Functions Change
+- Update all affected tests
+- Add new test cases for new functionality
+- Remove obsolete tests
+- Update performance benchmarks
+
+### Regular Maintenance
+- Review test coverage monthly
+- Update test data and scenarios
+- Refactor duplicate test logic
+- Optimize slow-running tests
+
+## Quality Metrics
+
+- **Test-to-Code Ratio**: Minimum 1:1 (1 line of test per line of code)
+- **Test Execution Time**: < 100ms per test suite
+- **Coverage Threshold**: 90% lines, 90% branches, 100% functions
+- **Test Reliability**: 0% flaky tests tolerated

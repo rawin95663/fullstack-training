@@ -1,0 +1,148 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Helper Functions Creation and Management Rule
+
+## Critical Rules
+
+- **Centralized Location**: ALL helper functions for formatting, validation, datetime, constants, string manipulation, number processing, and utilities MUST be defined in the `packages/helpers` package, never scattered across individual apps
+- **Pure Functions Only**: Every helper function MUST be a pure function - no side effects, no external dependencies, same input always produces same output
+- **Comprehensive Testing**: Every helper function MUST have corresponding unit tests using vitest with at least 90% code coverage
+- **Type Safety**: All functions MUST have proper TypeScript types with full type definitions
+- **Modular Organization**: Functions MUST be organized in appropriate modules (string, number, validation, datetime, constants)
+- **Documentation**: Each function MUST have JSDoc comments explaining purpose, parameters, and return values
+- **Tree-Shakeable**: Functions MUST be exported in a way that supports tree-shaking for optimal bundle sizes
+- **Error Handling**: Functions MUST gracefully handle edge cases (null, undefined, invalid inputs) without throwing errors
+- **Naming Convention**: Use descriptive, verb-based names (formatCurrency, validateEmail, parseDate)
+- **Export Strategy**: Functions MUST be exported both individually and as namespace modules
+
+## Function Categories and Examples
+
+### String Utilities (`packages/helpers/src/string/`)
+- Formatting: `capitalize`, `truncate`, `slugify`, `camelCase`, `kebabCase`
+- Validation: `isEmpty`, `isAlpha`, `isAlphanumeric`
+- Security: `escapeHtml`, `stripHtml`, `maskString`
+- Analysis: `wordCount`, `getInitials`
+
+### Number Utilities (`packages/helpers/src/number/`)
+- Formatting: `formatNumber`, `formatCurrency`, `formatCompact`, `formatPercentage`
+- Math: `roundTo`, `clamp`, `average`, `sum`
+- Validation: `isValidNumber`, `isEven`, `isOdd`
+- File sizes: `formatBytes`, `formatFileSize`
+
+### Validation Utilities (`packages/helpers/src/validation/`)
+- Email/URL: `isValidEmail`, `isValidUrl`
+- Phone/Address: `isValidPhoneNumber`, `isValidIPv4`
+- Security: `isStrongPassword`, `isValidCreditCard`
+- Format: `isValidJSON`, `isValidHexColor`, `isValidSlug`
+
+### DateTime Utilities (`packages/helpers/src/datetime/`)
+- Formatting: `formatDate`, `formatTime`, `formatRelativeTime`
+- Manipulation: `addDays`, `subtractDays`, `getStartOfDay`
+- Comparison: `isDateBefore`, `isDateAfter`, `isSameDay`
+- Calculation: `getDaysDifference`, `getAge`
+
+### Constants (`packages/helpers/src/constants/`)
+- HTTP status codes, regex patterns, common values
+- File sizes, time constants, breakpoints
+- Colors, currencies, countries
+
+## Implementation Workflow
+
+1. **Function Creation**: Add function to appropriate module in `packages/helpers/src/`
+2. **Type Definition**: Ensure proper TypeScript types and JSDoc
+3. **Export Addition**: Add to module's index.ts and main index.ts
+4. **Test Creation**: Create comprehensive test in corresponding `.test.ts` file
+5. **Build Update**: Update `tsup.config.ts` if new module created
+6. **Package Update**: Update `package.json` exports if new module added
+7. **Documentation**: Update README.md with usage examples
+
+## Test Requirements
+
+- Use vitest for all testing
+- Test happy path and edge cases
+- Test with various input types (string, number, null, undefined)
+- Mock external dependencies if any (should be avoided)
+- Aim for 90%+ code coverage
+- Include performance tests for complex operations
+
+## Examples
+
+<example>
+  When asked to format currency: Create `formatCurrency(amount: number, currency?: string): string` in `packages/helpers/src/number/index.ts` with tests covering:
+  ```typescript
+  // Function implementation
+  export function formatCurrency(value: number, currency = "USD", locale = "en-US"): string {
+    if (value === null || value === undefined || isNaN(value)) {
+      return "";
+    }
+    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(value);
+  }
+  
+  // Test implementation
+  describe("formatCurrency", () => {
+    it("should format currency values", () => {
+      expect(formatCurrency(1234.56)).toBe("$1,234.56");
+      expect(formatCurrency(1000, "EUR")).toBe("€1,000.00");
+    });
+    it("should handle invalid values", () => {
+      expect(formatCurrency(NaN)).toBe("");
+    });
+  });
+  ```
+</example>
+
+<example type="invalid">
+  Creating utility functions directly in app components or pages:
+  ```typescript
+  // ❌ WRONG - Don't do this in app files
+  function formatPrice(price) {
+    return `$${price.toFixed(2)}`;
+  }
+  
+  // ❌ WRONG - Functions with side effects
+  function updateAndFormatDate(date) {
+    localStorage.setItem('lastDate', date); // Side effect!
+    return format(date, 'yyyy-MM-dd');
+  }
+  
+  // ❌ WRONG - No error handling
+  function parseJSON(str) {
+    return JSON.parse(str); // Will throw on invalid JSON
+  }
+  ```
+</example>
+
+## Quality Checklist
+
+- [ ] Function is pure (no side effects)
+- [ ] Function is in correct helpers module
+- [ ] Function has proper TypeScript types
+- [ ] Function has JSDoc documentation
+- [ ] Function handles edge cases gracefully
+- [ ] Function has comprehensive tests (90%+ coverage)
+- [ ] Function is exported properly
+- [ ] Function follows naming conventions
+- [ ] Function is added to package exports
+- [ ] README.md updated with usage example
+
+## Performance Considerations
+
+- Avoid regex compilation in hot paths - use constants
+- Cache expensive computations when possible
+- Use `Intl` APIs for locale-specific formatting
+- Minimize memory allocations in loops
+- Consider memoization for pure functions with expensive operations
+
+## Integration Requirements
+
+- All helper functions MUST be importable via tree-shakeable imports:
+  ```typescript
+  import { stringUtils } from "@workspace/helpers/string";
+  import { formatCurrency } from "@workspace/helpers/number";
+  ```
+- Functions MUST work in both Node.js and browser environments
+- Functions MUST not depend on framework-specific APIs (React, Vue, etc.)
+- Functions MUST be compatible with ES modules and CommonJS
