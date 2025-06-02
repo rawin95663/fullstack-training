@@ -1,0 +1,61 @@
+{
+  "name": "@workspace/helpers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./string": {
+      "import": "./dist/string/index.js",
+      "require": "./dist/string/index.cjs",
+      "types": "./dist/string/index.d.ts"
+    },
+    "./number": {
+      "import": "./dist/number/index.js",
+      "require": "./dist/number/index.cjs",
+      "types": "./dist/number/index.d.ts"
+    },
+    "./validation": {
+      "import": "./dist/validation/index.js",
+      "require": "./dist/validation/index.cjs",
+      "types": "./dist/validation/index.d.ts"
+    },
+    "./datetime": {
+      "import": "./dist/datetime/index.js",
+      "require": "./dist/datetime/index.cjs",
+      "types": "./dist/datetime/index.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/constants/index.js",
+      "require": "./dist/constants/index.cjs",
+      "types": "./dist/constants/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf .turbo node_modules dist",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.2",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^9.20.1",
+    "tsup": "^7.2.0",
+    "typescript": "^5.1.6",
+    "vitest": "^1.0.0"
+  }
+}
