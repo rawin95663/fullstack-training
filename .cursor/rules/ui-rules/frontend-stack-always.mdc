@@ -1,0 +1,200 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Frontend Technology Stack & Component Architecture
+
+## Critical Rules
+
+- **Framework & Language**: Always use Next.js with TypeScript for all frontend development - never use plain JavaScript or other React frameworks
+- **UI Components**: Maximize use of Shadcn/ui components from `@ui` package - always check existing Shadcn components before creating custom ones
+- **Component Organization**: 
+  - Use existing Shadcn components from `@ui` whenever possible
+  - Custom UI components MUST be created in `@ui/src/ui-components` and based on Shadcn patterns
+  - All components in `packages/ui` MUST be presentation components (no business logic, state management, or API calls)
+- **Styling**: Use TailwindCSS exclusively for styling - never use CSS modules, styled-components, or inline styles
+- **State Management**: Use Zustand for client-side state management - avoid Redux, Context API for global state
+- **Data Fetching**: Use Tanstack React Query for server state management and API calls - never use useEffect for data fetching
+- **HTTP Client**: Use Axios for all HTTP requests - never use fetch directly
+- **Form Handling**: Use React Hook Form + Zod for all form validation and handling
+- **Type Safety**: Always define proper TypeScript types and interfaces - never use `any` type
+- **Testing**: Use Vitest for unit tests and Playwright for end-to-end testing
+- **Hook Architecture**: Organize logic in custom hooks for better reusability and separation of concerns
+
+## Component Development Guidelines
+
+### Shadcn/UI Components (`@ui` package)
+- Always check available Shadcn components first: Button, Input, Card, Dialog, Select, etc.
+- Import from `@ui`: `import { Button, Card } from "@ui/components/ui/button"`
+- Use Shadcn variant patterns for consistent styling
+
+### Custom UI Components (`@ui/src/ui-components`)
+- Base custom components on Shadcn patterns and design tokens
+- Follow Shadcn's composition patterns and prop interfaces
+- Ensure components are presentation-only (no business logic)
+- Use TailwindCSS with Shadcn's design system variables
+- Export properly from package index
+
+### Component Structure
+```typescript
+// Presentation component example
+interface CustomComponentProps {
+  title: string;
+  variant?: "default" | "secondary";
+  children?: React.ReactNode;
+}
+
+export const CustomComponent = ({ title, variant = "default", children }: CustomComponentProps) => {
+  return (
+    <div className={cn("base-classes", variant === "secondary" && "variant-classes")}>
+      <h2>{title}</h2>
+      {children}
+    </div>
+  );
+};
+```
+
+## Technology Stack Requirements
+
+### Core Stack
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript (never JavaScript)
+- **UI Library**: Shadcn/ui + TailwindCSS
+- **State**: Zustand + Tanstack React Query
+- **Forms**: React Hook Form + Zod
+- **HTTP**: Axios
+- **Testing**: Vitest + Playwright
+
+### Import Patterns
+```typescript
+// UI Components
+import { Button, Card, Input } from "@ui/components/ui/button";
+import { CustomModal } from "@ui/ui-components/custom-modal";
+
+// State Management
+import { useStore } from "@/store/useStore";
+import { useQuery, useMutation } from "@tanstack/react-query";
+
+// Forms
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// HTTP
+import axios from "axios";
+```
+
+## Examples
+
+<example>
+  **Creating a form component with proper stack usage:**
+  ```typescript
+  import { Button, Input, Card } from "@ui/components/ui";
+  import { useForm } from "react-hook-form";
+  import { z } from "zod";
+  import { zodResolver } from "@hookform/resolvers/zod";
+  import { useMutation } from "@tanstack/react-query";
+  import axios from "axios";
+
+  const userSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email")
+  });
+
+  type UserFormData = z.infer<typeof userSchema>;
+
+  export const UserForm = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm<UserFormData>({
+      resolver: zodResolver(userSchema)
+    });
+
+    const createUser = useMutation({
+      mutationFn: (data: UserFormData) => axios.post("/api/users", data)
+    });
+
+    return (
+      <Card className="p-6">
+        <form onSubmit={handleSubmit(createUser.mutate)}>
+          <Input {...register("name")} placeholder="Name" />
+          {errors.name && <span className="text-red-500">{errors.name.message}</span>}
+          <Button type="submit" loading={createUser.isPending}>Submit</Button>
+        </form>
+      </Card>
+    );
+  };
+  ```
+</example>
+
+<example type="invalid">
+  **Wrong stack usage:**
+  ```typescript
+  // ❌ Using vanilla React without TypeScript
+  import React, { useState, useEffect } from 'react';
+  
+  // ❌ Using fetch instead of Axios
+  const fetchData = async () => {
+    const response = await fetch('/api/data');
+    return response.json();
+  };
+  
+  // ❌ Using useEffect for data fetching instead of React Query
+  useEffect(() => {
+    fetchData().then(setData);
+  }, []);
+  
+  // ❌ Creating custom styled components instead of using Shadcn + Tailwind
+  const StyledButton = styled.button`
+    background: blue;
+    color: white;
+  `;
+  
+  // ❌ Business logic in UI component
+  const UserCard = ({ userId }) => {
+    const [user, setUser] = useState(null);
+    
+    useEffect(() => {
+      // API call in component - should be in hook/query
+      fetchUser(userId).then(setUser);
+    }, [userId]);
+    
+    return <div>{user?.name}</div>;
+  };
+  ```
+</example>
+
+## Architecture Patterns
+
+### Hook-Based Organization
+- Create custom hooks for business logic
+- Separate data fetching hooks from UI components
+- Use composition over inheritance
+- Keep components focused on presentation
+
+### File Structure
+```
+apps/web/src/
+  components/          # App-specific components
+  hooks/              # Custom hooks
+  lib/                # Utilities and configurations
+  store/              # Zustand stores
+  
+packages/ui/src/
+  components/ui/      # Shadcn components
+  ui-components/      # Custom UI components
+```
+
+### Quality Standards
+- All components must have proper TypeScript interfaces
+- Use consistent naming conventions (PascalCase for components)
+- Implement proper error boundaries and loading states
+- Follow accessibility best practices with Shadcn components
+- Write tests for custom hooks and critical components
+
+## Performance & Best Practices
+
+- Use React.memo() for expensive presentation components
+- Implement proper loading and error states with React Query
+- Use Zustand for client state, React Query for server state
+- Optimize bundle size with proper tree-shaking
+- Follow Next.js best practices for SSR/SSG when applicable

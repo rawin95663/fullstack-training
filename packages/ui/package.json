@@ -8,7 +8,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
@@ -23,6 +25,11 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^8.4.7",
+    "@storybook/addon-links": "^8.4.7",
+    "@storybook/blocks": "^8.4.7",
+    "@storybook/react": "^8.4.7",
+    "@storybook/react-vite": "^8.4.7",
     "@tailwindcss/postcss": "^4.0.8",
     "@turbo/gen": "^2.4.2",
     "@types/node": "^20",
@@ -30,8 +37,10 @@
     "@types/react-dom": "^19",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9.20.1",
     "prettier": "^3.5.1",
+    "storybook": "^8.4.7",
     "tailwindcss": "^4.0.8",
     "typescript": "^5.7.3"
   },
@@ -40,6 +49,7 @@
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./ui-components/*": "./src/ui-components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
   }
 }
