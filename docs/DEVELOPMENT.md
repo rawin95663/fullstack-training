@@ -11,6 +11,7 @@ Dự án này sử dụng các công cụ sau để đảm bảo chất lượng
 - **Prettier**: Code formatting (mỗi package có config riêng)
 - **ESLint**: Code linting (sử dụng shared config)
 - **Turborepo**: Build optimization và task management
+- **Smart Detection**: Script phát hiện packages có thay đổi
 
 ### 📋 Quy trình hoạt động:
 
@@ -20,11 +21,29 @@ Dự án này sử dụng các công cụ sau để đảm bảo chất lượng
 git commit -m "feat: add new feature"
 ```
 
-Hook sẽ:
-1. 🎨 Chạy format cho packages có thay đổi
-2. 🔍 Chạy lint cho packages có thay đổi
-3. 🛠️ Chạy type-check cho packages có thay đổi
-4. ✅ Chỉ cho phép commit nếu tất cả pass
+**Hook sẽ thực hiện:**
+1. 🔍 **Smart Detection**: Phát hiện packages có staged files
+2. 🎨 Chạy format **chỉ cho packages có thay đổi**
+3. 🔍 Chạy lint **chỉ cho packages có thay đổi**
+4. 🛠️ Chạy type-check **chỉ cho packages có thay đổi**
+5. ✅ Chỉ cho phép commit nếu tất cả pass
+
+**Ví dụ output:**
+```bash
+🔍 Detecting packages with staged changes...
+Changed files: 2
+  - apps/web/app/page.tsx
+  - packages/ui/src/components/button.tsx
+Changed packages: web, @workspace/ui
+📦 Found changes in packages: web @workspace/ui
+🎨 Formatting web...
+🔍 Linting web...
+🔍 Type checking web...
+🎨 Formatting @workspace/ui...
+🔍 Linting @workspace/ui...
+🔍 Type checking @workspace/ui...
+✅ All checks passed!
+```
 
 #### Commit Message Hook  
 ```bash
@@ -53,11 +72,24 @@ git commit -m "docs: update readme"
 git push origin main
 ```
 
-Hook sẽ:
-1. 📦 Phát hiện packages có thay đổi
-2. 🚀 Chỉ build các packages bị ảnh hưởng  
+**Hook sẽ thực hiện:**
+1. 🔍 **Smart Detection**: Phát hiện packages có thay đổi từ commit trước
+2. 🚀 Chỉ build **packages bị ảnh hưởng**  
 3. ❌ Từ chối push nếu build lỗi
 4. ✅ Cho phép push nếu build thành công
+
+**Ví dụ output:**
+```bash
+🚀 Detecting packages with changes to build...
+Changed files: 5
+  - apps/web/app/layout.tsx
+  - packages/ui/src/lib/utils.ts
+Changed packages: web, @workspace/ui
+📦 Found changes in packages: web @workspace/ui
+🔨 Building web...
+🔨 Building @workspace/ui...
+✅ Build successful! Ready to push.
+```
 
 ### 🎯 Scripts có thể sử dụng:
 
@@ -80,15 +112,16 @@ pnpm type-check
 # Build tất cả projects
 pnpm build
 
-# Build chỉ packages có thay đổi
-pnpm turbo build --filter="...[HEAD~1]"
-
 # Format cho specific package
 pnpm turbo format --filter=web
 pnpm turbo format --filter=@workspace/ui
 
 # Lint cho specific package
 pnpm turbo lint --filter=web
+
+# Test script phát hiện thay đổi
+node scripts/get-changed-packages.js --cached    # staged files
+node scripts/get-changed-packages.js HEAD~1     # since last commit
 ```
 
 ### 🔧 Cấu hình files:
@@ -96,8 +129,21 @@ pnpm turbo lint --filter=web
 - `commitlint.config.js` - Cấu hình commit message rules
 - `.husky/` - Git hooks directory
 - `turbo.json` - Turborepo task configuration
+- `scripts/get-changed-packages.js` - **Smart detection script**
 - `apps/web/.prettierrc` - Prettier config cho web app
 - `packages/ui/.prettierrc` - Prettier config cho UI package
+
+### 🧠 Smart Detection Logic:
+
+Script `get-changed-packages.js` hoạt động như sau:
+
+1. **Detect Changed Files**: Sử dụng `git diff` để tìm files thay đổi
+2. **Map to Packages**: Phân tích path để xác định package chứa file
+3. **Package Mapping**:
+   - `apps/web/*` → `web` package
+   - `packages/ui/*` → `@workspace/ui` package
+   - `packages/eslint-config/*` → `@workspace/eslint-config` package
+4. **Output**: Trả về list packages thực sự cần xử lý
 
 ### 💡 Tips:
 
@@ -107,16 +153,23 @@ pnpm turbo lint --filter=web
    git push --no-verify
    ```
 
-2. **Test tasks trước khi commit**:
+2. **Test hooks trước khi commit**:
    ```bash
-   pnpm turbo format --filter="[HEAD]"
-   pnpm turbo lint --filter="[HEAD]"
-   pnpm turbo type-check --filter="[HEAD]"
+   # Test detection script
+   node scripts/get-changed-packages.js --cached
+   
+   # Test tasks cho specific package
+   pnpm turbo format --filter=web
+   pnpm turbo lint --filter=@workspace/ui
    ```
 
-3. **Xem packages nào sẽ bị build**:
+3. **Debug detection**:
    ```bash
-   pnpm turbo build --filter="...[HEAD~1]" --dry-run
+   # Xem files nào đang staged
+   git diff --cached --name-only
+   
+   # Test script với verbose output
+   node scripts/get-changed-packages.js --cached
    ```
 
 ### 🚨 Troubleshooting:
@@ -129,8 +182,11 @@ git commit --amend -m "feat: correct commit message"
 
 **Build lỗi khi push**:
 ```bash  
-# Fix lỗi build trước, sau đó:
-pnpm turbo build --filter="...[HEAD~1]"
+# Xem packages nào sẽ bị build
+node scripts/get-changed-packages.js HEAD~1
+
+# Fix lỗi build cho specific package
+cd apps/web && pnpm build
 git push
 ```
 
@@ -150,19 +206,22 @@ pnpm turbo format --filter=@workspace/ui
 ### 📦 Package Configurations:
 
 #### Web App (`apps/web/`)
-- ✅ Prettier với Tailwind plugin
+- ✅ Prettier với config riêng
 - ✅ ESLint với Next.js rules
 - ✅ TypeScript strict mode
+- ✅ Prettier ignore build files
 
 #### UI Package (`packages/ui/`)
 - ✅ Prettier cho React components
 - ✅ ESLint cho React/TS
 - ✅ TypeScript strict mode
+- ✅ Prettier ignore dist files
 
 ### 🎉 Benefits:
 
-- ✅ **Per-Package Config**: Mỗi package có config riêng phù hợp
-- ⚡ **Performance**: Chỉ chạy tasks cho packages có thay đổi
-- 🔒 **Consistency**: Commit message theo chuẩn
-- 🚀 **Developer Experience**: Workflow mượt mà
-- 📈 **Maintainability**: Dễ maintain và scale 
+- ✅ **Smart Detection**: Chỉ chạy tasks cho packages thật sự thay đổi
+- ⚡ **Performance**: Tiết kiệm thời gian đáng kể trong large monorepo
+- 🔒 **Precision**: Không chạy task không cần thiết
+- 🎯 **Per-Package Config**: Mỗi package có config riêng phù hợp
+- 🚀 **Scalable**: Dễ thêm packages mới
+- 📈 **Maintainable**: Code quality được đảm bảo với cost tối thiểu 

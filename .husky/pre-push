@@ -1,29 +1,29 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🚀 Running build for changed projects..."
+echo "🚀 Detecting packages with changes to build..."
 
-# Check if we have any staged changes or we're pushing commits
-LOCAL_CHANGES=$(git diff --name-only --cached)
-UNPUSHED_COMMITS=$(git rev-list @{u}.. 2>/dev/null | wc -l | tr -d ' ')
+# Get packages that have changes since last commit
+CHANGED_PACKAGES=$(node scripts/get-changed-packages.js HEAD~1)
 
-if [ -z "$LOCAL_CHANGES" ] && [ "$UNPUSHED_COMMITS" = "0" ]; then
-  echo "No changes to build, skipping."
+if [ -z "$CHANGED_PACKAGES" ]; then
+  echo "No changes detected in packages, skipping build."
   exit 0
 fi
 
+echo "📦 Found changes in packages: $CHANGED_PACKAGES"
+
+# Build each changed package
 echo "📦 Building affected packages using Turbo..."
-
-# Use turbo's affected package detection
-# This will only build packages that have changed files
-pnpm turbo build --filter="...[HEAD~1]"
-
-BUILD_EXIT_CODE=$?
-
-if [ $BUILD_EXIT_CODE -ne 0 ]; then
-  echo "❌ Build failed! Push aborted."
-  echo "Please fix the build errors and try again."
-  exit 1
-fi
+for PACKAGE in $CHANGED_PACKAGES; do
+  echo "🔨 Building $PACKAGE..."
+  pnpm turbo build --filter="$PACKAGE"
+  
+  if [ $? -ne 0 ]; then
+    echo "❌ Build failed for $PACKAGE! Push aborted."
+    echo "Please fix the build errors and try again."
+    exit 1
+  fi
+done
 
 echo "✅ Build successful! Ready to push." 
